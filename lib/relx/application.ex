@@ -8,7 +8,8 @@ defmodule Relx.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      Relx.Repo
+      Relx.Repo,
+      %{id: Relx.Mail, start: {:gen_smtp_server, :start, [Relx.Mail]}}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
