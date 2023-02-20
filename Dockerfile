@@ -17,7 +17,7 @@ RUN mkdir -p /databases/sqlite3
 
 ENV MIX_ENV=prod DATABASE_PATH=/databases/sqlite3/relx.db
 
-EXPOSE 1025
+EXPOSE 587/tcp
 
 RUN apt update && apt install build-essential sqlite3 -y
 

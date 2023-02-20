@@ -80,8 +80,8 @@ defmodule Relx.Mail do
 
   defp pick_host(host) do
     if @env != :prod,
-      do: [relay: "0.0.0.0", port: 1025],
-      else: [relay: host]
+      do: [relay: "0.0.0.0", port: 2525],
+      else: [relay: host, port: 587]
   end
 
   @impl true
