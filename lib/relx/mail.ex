@@ -62,10 +62,7 @@ defmodule Relx.Mail do
     # we should have in the state.
     case Users.get_by_id(state.proxy.user_id) do
       %User{email: user_email} ->
-        [_, host] = String.split(user_email, "@", parts: 2)
-        relay(from, user_email, data, host)
-
-        Logger.info("Relaying email to #{user_email} through proxy #{state.proxy.email}")
+        relay(from, user_email, data, state)
 
         {:ok, "queued", state}
 
@@ -74,14 +71,23 @@ defmodule Relx.Mail do
     end
   end
 
-  defp relay(from, email, data, host) do
-    :gen_smtp_client.send({from, [email], :erlang.binary_to_list(data)}, pick_host(host))
+  defp relay(from, email, data, state) do
+    :gen_smtp_client.send({from, [email], :erlang.binary_to_list(data)}, pick_host(), fn
+      {:ok, _} ->
+        Logger.info("Relaying email to #{email} through proxy #{state.proxy.email}")
+
+      {:exit, err} ->
+        Logger.error("Error sending email - #{inspect(err)}")
+
+      {:error, type, val} ->
+        Logger.error("Error sending email - #{type} with value - #{inspect(val)}")
+    end)
   end
 
-  defp pick_host(host) do
+  defp pick_host do
     if @env != :prod,
       do: [relay: "0.0.0.0", port: 2525],
-      else: [relay: host, port: 587, ssl: true]
+      else: [port: 25, relay: "aspmx.l.google.com"]
   end
 
   @impl true
